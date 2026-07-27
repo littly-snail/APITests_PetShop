@@ -155,13 +155,43 @@ class TestPet:
             pet_id = create_pet["id"]
 
         with allure.step("Отправка запроса на удаление питомца"):
-            response1 = requests.delete(url=f"{BASE_URL}/pet/{pet_id}")
+            delete_response = requests.delete(url=f"{BASE_URL}/pet/{pet_id}")
 
         with allure.step("Проверка статуса ответа"):
-            assert response1.status_code == 200, "Код ответа не совпал с ожидаемым"
+            assert delete_response.status_code == 200, "Код ответа не совпал с ожидаемым"
 
         with allure.step("Отправка запроса на получение информации о питомце по ID"):
-            response2 = requests.get(url=f"{BASE_URL}/pet/{pet_id}")
+            get_response = requests.get(url=f"{BASE_URL}/pet/{pet_id}")
 
         with allure.step("Проверка, что питомец больше недоступен по ID"):
-            assert response2.status_code == 404, "Код ответа не совпал с ожидаемым"
+            assert get_response.status_code == 404, "Код ответа не совпал с ожидаемым"
+
+
+    @allure.title("Получение списка питомцев по статусу")
+    @pytest.mark.parametrize(
+        "status, expected_status_code",
+        [
+            ("available", 200),
+            ("pending", 200),
+            ("sold", 200),
+            ("stolen", 400),
+            ("", 400)
+        ]
+    )
+    def test_get_pets_by_status(self, status, expected_status_code):
+        with allure.step(f"Отправка запроса на получение питомцев по статусу {status}"):
+            response = requests.get(url=f"{BASE_URL}/pet/findByStatus", params={"status": status})
+            pets = response.json()
+
+        with allure.step("Проверка содержимого ответа для корректного запроса"):
+            if response.status_code == 200:
+                assert isinstance(pets, list)
+                assert len(pets) > 0, "Список питомцев пуст"
+                for pet in pets:
+                    assert pet["status"] == status, "статус питомца не совпал с ожидаемым"
+
+        with allure.step("Проверка содержимого ответа для НЕкорректного запроса"):
+            if response.status_code == 400:
+                assert isinstance(pets, dict)
+                assert "Input error" in pets["message"]
+
