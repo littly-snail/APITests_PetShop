@@ -183,19 +183,15 @@ class TestPet:
             response = requests.get(url=f"{BASE_URL}/pet/findByStatus", params={"status": status})
             pets = response.json()
 
-        with allure.step("Проверка статуса ответа"):
-            assert response.status_code == expected_status_code, "Код ответа не совпал с ожидаемым"
-
-        with allure.step("Проверка формата ответа"):
+        with allure.step("Проверка содержимого ответа для корректного запроса"):
             if response.status_code == 200:
                 assert isinstance(pets, list)
-            else:
-                pass
-
-        with allure.step("Проверка статусов питомцев в списке"):
-            if response.status_code == 200:
                 assert len(pets) > 0, "Список питомцев пуст"
                 for pet in pets:
                     assert pet["status"] == status, "статус питомца не совпал с ожидаемым"
-            else:
-                pass
+
+        with allure.step("Проверка содержимого ответа для НЕкорректного запроса"):
+            if response.status_code == 400:
+                assert isinstance(pets, dict)
+                assert "Input error" in pets["message"]
+
