@@ -35,9 +35,11 @@ class TestStore:
 
 
     @allure.title("Получение информации о заказе по ID")
-    def test_get_order_by_id(self):
+    def test_get_order_by_id(self, create_order):
+        with allure.step("Получение ID созданного в фикстуре заказа"):
+            order_id = create_order["id"]
+
         with allure.step("Отправка запроса на получение информации о заказе по ID"):
-            order_id = 1
             response = requests.get(url=f"{BASE_URL}/store/order/{order_id}")
 
         with allure.step("Проверка статуса ответа"):
@@ -46,9 +48,11 @@ class TestStore:
 
 
     @allure.title("Удаление заказа по ID")
-    def test_delete_order_by_id(self):
+    def test_delete_order_by_id(self, create_order):
+        with allure.step("Получение ID созданного в фикстуре заказа"):
+            order_id = create_order["id"]
+
         with allure.step("Отправка запроса на удаление заказа"):
-            order_id = 1
             delete_response = requests.delete(url=f"{BASE_URL}/store/order/{order_id}")
 
         with allure.step("Проверка статуса ответа"):
